@@ -24,7 +24,7 @@
 
     - name: Configure unattended-upgrades
       ansible.builtin.template:
-        src: "./templates/{{ item }}"
+        src: "templates/{{ item }}"
         dest: "/etc/apt/apt.conf.d/{{ item }}"
         owner: root
         group: root
