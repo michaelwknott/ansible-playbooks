@@ -1,0 +1,120 @@
+- name: Secure and harden server security
+  hosts: fastapi-server
+  become: true
+  vars_files:
+    - vars.yaml
+
+  handlers:
+    - name: restart ssh
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+  tasks:
+    - name: Update packages
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Install unattended-upgrades
+      ansible.builtin.apt:
+        name: unattended-upgrades
+        state: latest
+
+    - name: Configure unattended-upgrades
+      ansible.builtin.template:
+        src: "./templates/{{ item }}"
+        dest: "/etc/apt/apt.conf.d/{{ item }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - 20auto-upgrades
+        - 50unattended-upgrades
+
+    - name: Update ssh config
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: 'sshd -t -f %s'
+      with_items:
+        - regexp: "^#?PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^#?PermitRootLogin"
+          line: "PermitRootLogin no"
+      notify: restart ssh
+
+    - name: Add local user and add to sudo group
+      ansible.builtin.user:
+        name: "{{ username }}"
+        createhome: yes
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        state: present
+
+    - name: Allow user to run sudo commands without password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        line: "{{ username }} ALL=(ALL) NOPASSWD:ALL"
+        validate: 'visudo -cf %s'
+
+    - name: Add ssh directory
+      ansible.builtin.file:
+        path: "/home/{{ username }}/.ssh"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0700
+
+    - name: Add ssh key to authorized_keys
+      ansible.builtin.copy:
+        content: "{{ lookup('file', ssh_public_key_path) }}"
+        dest: "/home/{{ username }}/.ssh/authorized_keys"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0600
+        validate: 'ssh-keygen -l -f %s'
+
+    - name: Install ufw
+      ansible.builtin.apt:
+        name: ufw
+        state: latest
+
+    - name: Set ufw default outgoing to allow
+      ansible.builtin.ufw:
+        direction: outgoing
+        policy: allow
+
+    - name: Set ufw default incoming to deny
+      ansible.builtin.ufw:
+        direction: incoming
+        policy: deny
+
+    - name: Allow ssh on IPv4
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ ssh_port }}"
+        proto: tcp
+        src: "{{ trusted_ip }}"
+        state: enabled
+
+    - name: Enable ufw
+      ansible.builtin.service:
+        name: ufw
+        state: started
+        enabled: yes
+
+    - name: Install fail2ban
+      ansible.builtin.apt:
+        name: fail2ban
+        state: latest
+    
+    - name: Ensure fail2ban is running and enabled on boot.
+      ansible.builtin.service:
+        name: fail2ban
+        state: started
+        enabled: yes

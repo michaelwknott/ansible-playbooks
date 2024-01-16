@@ -1,0 +1,4 @@
+username: <your_username_here>
+trusted_ip: <your_ip_address_here>
+ssh_public_key_path: <your_ssh_public_key_path_here>
+ssh_port: <your_ssh_port_here>
