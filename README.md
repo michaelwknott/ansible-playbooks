@@ -1,53 +1,26 @@
-# python-project-template
-A starter repo for a Python app.
+# ansible-playbooks
+A repository of ansible playbooks for various tasks
 
-## Demo
-Include a demo gif or screenshot in this section to highlight your project in action.
-
-## About the Project
-Include a description of your project here.
-
-## Built With
-List the frameworks/libraries your project uses here.
+## Table of Contents
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Playbooks](#playbooks)
+  - [Server Setup and Security](#server-setup-and-security)
 
 ## Getting Started
 
 ### Prerequisites
-List the things a developer must install before running your project here.
+- Python 3.11
+- Ansible 2.11
+- [Pre-commit](https://pre-commit.com/) (optional)
 
 ### Installation
 
 1. Clone the repo
     ```
-    git clone git@github.com:michaelwknott/python-project-template.git
+    git clone git@github.com:michaelwknott/ansible-playbooks.git
     ```
-
-2. Create a virtual environment
-   ```
-   python -m venv .venv --prompt .
-   ```
-
-3. Activate your virtual environment
-   ```
-   .venv/bin/activate
-   ```
-
-4. Install requirements
-   ```
-   python -m pip install requirements.txt
-   ```
-
-## Usage
-Include any relevant instructions on using your project here.
-
-## Contributing
-
-1. Fork the Project. See the following [instructions](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) for more information
-
-1. Create a local clone of your fork. Ensure you change the repo address between the angle brackets to your fork's address
-```
-git clone <git@github.com:michaelwknott/python-project-template.git>
-```
 
 1. Create a virtual environment
    ```
@@ -56,41 +29,58 @@ git clone <git@github.com:michaelwknott/python-project-template.git>
 
 1. Activate your virtual environment
    ```
-    .venv/bin/activate
-    ```
+   .venv/bin/activate
+   ```
+1. Ansible. I installed Ansible to be globally available using Pipx. See the following [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-and-upgrading-ansible-with-pipx) for more information. Alternatively you can add Ansible to the `requirements.txt` file.
 
-1. Install project requirements and development requirements
-```
-python -m pip install -r requirements.txt -r requirements-dev.txt
-```
-
+1. Install requirements
+   ```
+   python -m pip install requirements.txt
+   ```
 1. Install pre-commit hooks
-```
-pre-commit install
+   ```
+   pre-commit install
+   ```
+
+## Playbooks
+
+### Server Setup and Security
+
+This playbook is designed to secure and harden a server's security. It performs the following tasks:
+ - Updates the system packages
+ - Installs unattended-upgrades and configures it to automatically install security updates
+ - Updates SSH configuration to disable root login and password authentication
+ - Adds a local user with sudo privileges and allows user to run sudo commands without a password
+ - Adds a ssh directory for the local user and copies the public key to the authorized_keys file
+ - Installs and configures ufw to only allow SSH on IPv4 from a specific IP address
+ - Installs fail2ban
+
+To use this playbook, you will need to create a inventory and vars file with the following contents:
+
+```ini
+# inventory.ini
+# Update the values to match your server:
+# - host: The IP address of your server
+[host]
+<ip address>
 ```
 
-1. Create `.git_commit_msg.txt` to use as your commit message template. A template can be found [here](https://gist.github.com/michaelwknott/67ca1a2bbd815749f5fba7a983cd2b9c) or see the following [instructions](https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for m
-ore information 
+```yaml
+# vars.yaml
+# Update the values to match your server:
+# - username: The username of the local user to create
+# - trusted_ip: The IP address that will be allowed to SSH into the server
+# - ssh_public_key_path: The path to your SSH public key
+# - ssh_port: The port that SSH is running on
 
-1. Add `.git_commit_msg.txt` to use as your commit message template
-```
-git config commit.template .git_commit_msg.txt
-```
-
-1. Create a feature branch
-```
-git checkout -b <feature-branch>
-```
-
-1. Make your changes and commit them
-```
-git add .
-git commit
+username: <your_username_here>
+trusted_ip: <your_ip_address_here>
+ssh_public_key_path: <your_ssh_public_key_path_here>
+ssh_port: <your_ssh_port_here>
 ```
 
-1. Push your changes to your fork
-```
-git push origin <feature-branch>
-```
+To run the playbook, use the following command in your terminal:
 
-1. Create a pull request. See the following [instructions](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) for more information
+```bash
+ansible-playbook -i inventory.ini server-setup-and-security.yaml
+```
