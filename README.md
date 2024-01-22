@@ -1,5 +1,5 @@
 # ansible-playbooks
-A repository of ansible playbooks for various tasks
+A repository of Ansible playbooks for various tasks
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -11,8 +11,8 @@ A repository of ansible playbooks for various tasks
 ## Getting Started
 
 ### Prerequisites
-- Python 3.11
-- Ansible 2.11
+- [Python 3.11](https://www.python.org/)
+- [Ansible 9](https://docs.ansible.com/)
 - [Pre-commit](https://pre-commit.com/) (optional)
 
 ### Installation
