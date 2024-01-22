@@ -84,3 +84,8 @@ To run the playbook, use the following command in your terminal:
 ```bash
 ansible-playbook -i inventory.ini server-setup-and-security.yaml
 ```
+#### Acknowledgements
+This playbook was inspired by the following resources:
+- [Linode: Guides - Setting Up and Securing a Compute Instance](https://www.linode.com/docs/products/compute/compute-instances/guides/set-up-and-secure/)
+- [Learn Linux TV](https://www.learnlinux.tv/getting-started-with-ansible/)
+- [Ansible for DevOps](https://github.com/geerlingguy/ansible-for-devops-manuscript)
